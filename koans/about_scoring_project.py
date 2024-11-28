@@ -32,9 +32,36 @@ from runner.koan import *
 #
 # Your goal is to write the score method.
 
+#opted for recursive approach
+def get_score_from_appearances(number, appearances):
+    #braek condition
+    if appearances == 0:
+        return 0
+
+    if appearances >= 3:
+        if number == 1: return 1000 + get_score_from_appearances(number, appearances - 3)
+        return (number * 100) + get_score_from_appearances(number, appearances - 3)
+
+    if number == 1: return 100 + get_score_from_appearances(number, appearances - 1)
+    if number == 5: return 50 + get_score_from_appearances(number, appearances - 1)
+
+    return 0
+
+
+
+
 def score(dice):
-    # You need to write this method
-    pass
+    if not dice: return 0   # empty rolls cannot be scored
+    total_score = 0
+    sides_and_appearances = {}
+
+    for roll in dice:
+        if str(roll) not in sides_and_appearances: sides_and_appearances[str(roll)] = 0
+        sides_and_appearances[str(roll)] += 1
+    for side, appearances in sides_and_appearances.items():
+        total_score += get_score_from_appearances(int(side), appearances)
+
+    return total_score
 
 class AboutScoringProject(Koan):
     def test_score_of_an_empty_list_is_zero(self):
