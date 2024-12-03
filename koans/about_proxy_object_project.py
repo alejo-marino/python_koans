@@ -21,11 +21,28 @@ from runner.koan import *
 class Proxy:
     def __init__(self, target_object):
         # WRITE CODE HERE
+        self.sent_attributes = []
 
         #initialize '_obj' attribute last. Trust me on this!
         self._obj = target_object
 
     # WRITE CODE HERE
+    def __getattr__(self, attribute_name):  # __getattribute__ will cause infinite recursion
+        self.sent_attributes.append(attribute_name)
+        return self._obj.__getattribute__(attribute_name)
+
+    def __setattr__(self, attribute_name, value):
+        if attribute_name in self.sent_attributes:
+            object.__setattr__(self, attribute_name, value)
+        else:
+            self.sent_attributes.append(attribute_name)
+            self._obj.__setattr__(attribute_name, value)
+
+    def __delattr__(self, attribute_name) -> None:
+        if attribute_name in self.sent_attributes:
+            object.__delattr__(self, attribute_name)
+        else:
+            print("Attempted to delete '" + attribute_name + "' but it was not found in the sent_attributes list.")
 
 # The proxy object should pass the following Koan:
 #
