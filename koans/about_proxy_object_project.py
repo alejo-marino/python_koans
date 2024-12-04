@@ -21,28 +21,37 @@ from runner.koan import *
 class Proxy:
     def __init__(self, target_object):
         # WRITE CODE HERE
-        self.sent_attributes = []
+        self._sent_attributes = []
 
         #initialize '_obj' attribute last. Trust me on this!
         self._obj = target_object
 
     # WRITE CODE HERE
     def __getattr__(self, attribute_name):  # __getattribute__ will cause infinite recursion
-        self.sent_attributes.append(attribute_name)
+        self._sent_attributes.append(attribute_name)
         return self._obj.__getattribute__(attribute_name)
 
     def __setattr__(self, attribute_name, value):
-        if attribute_name in self.sent_attributes:
+        if attribute_name in {'_sent_attributes', '_obj'}:  # Prevent infinite recursion
             object.__setattr__(self, attribute_name, value)
         else:
-            self.sent_attributes.append(attribute_name)
+            self._sent_attributes.append(attribute_name)
             self._obj.__setattr__(attribute_name, value)
 
-    def __delattr__(self, attribute_name) -> None:
-        if attribute_name in self.sent_attributes:
-            object.__delattr__(self, attribute_name)
+    def __delattr__(self, attribute_name):
+        if attribute_name in self._sent_attributes:
+            self._obj.__delattr__(self, attribute_name)
         else:
-            print("Attempted to delete '" + attribute_name + "' but it was not found in the sent_attributes list.")
+            print("Attempted to delete '" + attribute_name + "' but it was not found in the _sent_attributes list.")
+    
+    def messages(self):
+        return self._sent_attributes
+    
+    def was_called(self, attribute_name):
+        return attribute_name in self._sent_attributes
+    
+    def number_of_times_called(self, attribute_name):
+        return self._sent_attributes.count(attribute_name)
 
 # The proxy object should pass the following Koan:
 #
